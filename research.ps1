@@ -32,9 +32,14 @@ $request
 "@
 if ($DryRun) { $prompt; return }
 
-$codex = Get-Command codex -ErrorAction Stop
-$runId = [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ') + '-' + [guid]::NewGuid().ToString('N').Substring(0, 8)
-$runDir = Join-Path $PSScriptRoot "runs/$runId"
+$startedAt = [DateTimeOffset]::Now
+$uniqueId = [guid]::NewGuid().ToString('N').Substring(0, 8)
+$runId = $startedAt.UtcDateTime.ToString('yyyyMMddTHHmmssfffZ') + '-' + $uniqueId
+$title = ($Question -replace '[^\p{L}\p{N}]+', '-').Trim('-')
+if ($title.Length -gt 48) { $title = $title.Substring(0, 48).TrimEnd('-') }
+if (!$title) { $title = '질문' }
+$folderName = $startedAt.ToString('yyyyMMdd-HHmmss') + '_' + $title + '_' + $uniqueId
+$runDir = Join-Path $PSScriptRoot "runs/$folderName"
 New-Item -ItemType Directory -Path $runDir -Force | Out-Null
 $prompt | Set-Content -LiteralPath (Join-Path $runDir 'prompt.md') -Encoding utf8
 $request | Set-Content -LiteralPath (Join-Path $runDir 'request.json') -Encoding utf8
@@ -53,6 +58,7 @@ $codexArgs = @('exec', '--cd', $PSScriptRoot, '--sandbox', 'read-only',
     '-c', 'features.multi_agent=false', '--output-last-message', $candidate, '-')
 try {
     Write-Host "조사 실행 중. 기록: $runDir"
+    $codex = Get-Command codex -ErrorAction Stop
     $prompt | & $codex @codexArgs 2> $stderr | Set-Content -LiteralPath $events -Encoding utf8
     if ($LASTEXITCODE -ne 0) { throw "Codex 실행 실패 (exit $LASTEXITCODE). stderr.log를 확인하세요." }
     if (!(Test-Path -LiteralPath $candidate) -or [string]::IsNullOrWhiteSpace((Get-Content -LiteralPath $candidate -Raw))) {
