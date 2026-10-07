@@ -1,0 +1,7 @@
+runs/
+work/
+.env
+.env.*
+!.env.example
+auth.json
+*.log
