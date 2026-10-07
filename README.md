@@ -70,6 +70,8 @@ pwsh -File ./tests/smoke.ps1
 
 ## 조사 결과 예시
 
+- [Slack 업무 알림에 필요한 권한](docs/examples/slack-posting-permissions.md)
+- [Slack 업무 알림의 성공 판단 기준](docs/examples/slack-posting-verification.md)
 - [TaskGroup과 gather의 예외 처리 비교](docs/examples/taskgroup-vs-gather.md)
 - [문서 접근 실패 후 대체 문서 조사](docs/examples/taskgroup-alternative-document.md)
 
